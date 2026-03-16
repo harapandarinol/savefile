@@ -1,0 +1,28 @@
+
+body{
+font-family:Arial;
+background:#f4f6f8;
+}
+
+.container{
+max-width:1100px;
+margin:auto;
+padding:40px;
+}
+
+.card{
+background:white;
+padding:20px;
+border-radius:10px;
+margin-bottom:10px;
+box-shadow:0 5px 10px rgba(0,0,0,0.05);
+}
+
+button{
+background:#6366f1;
+color:white;
+border:none;
+padding:8px 14px;
+border-radius:6px;
+cursor:pointer;
+}
