@@ -54,25 +54,51 @@ function openWorkspace(id, name) {
   window.location = "workspace.html";
 }
 
-async function createWorkspace() {
-  const name = prompt("Masukkan nama Workspace baru:");
-  if(!name) return;
+// Membuka Custom Modal
+function createWorkspace() {
+  const modal = document.getElementById("modal-create-ws");
+  modal.classList.remove("hidden");
+  // Sedikit delay agar efek transisi jalan
+  setTimeout(() => {
+    modal.classList.remove("opacity-0");
+    modal.children[0].classList.remove("scale-95");
+    document.getElementById("ws-input-name").focus();
+  }, 10);
+}
+
+// Menutup Custom Modal
+function closeModalWs() {
+  const modal = document.getElementById("modal-create-ws");
+  modal.classList.add("opacity-0");
+  modal.children[0].classList.add("scale-95");
+  setTimeout(() => {
+    modal.classList.add("hidden");
+    document.getElementById("ws-input-name").value = "";
+  }, 200);
+}
+
+// Eksekusi API saat tombol "Simpan" diklik
+async function submitWorkspace() {
+  const nameInput = document.getElementById("ws-input-name").value.trim();
+  if (!nameInput) return; // Jika kosong, batalkan
+  
+  closeModalWs();
+  showToast("Membuat workspace...");
 
   const res = await api({
     action: "createWorkspace",
     token: localStorage.token,
-    name: name,
-    email: localStorage.email || "unknown" 
+    email: localStorage.email,
+    name: nameInput
   });
 
-  if(res && res.status === "success") {
+  if (res && res.status === "success") {
     showToast("Workspace berhasil dibuat!");
-    loadWorkspace();
+    loadWorkspace(); // Refresh daftar workspace
   } else {
-    showToast(res ? res.message : "Gagal membuat workspace", true);
+    showToast("Gagal membuat workspace.");
   }
 }
-
 // === FITUR BARU: COPY ID ===
 function copyId(id) {
   navigator.clipboard.writeText(id).then(() => {
