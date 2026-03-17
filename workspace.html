@@ -1,77 +1,82 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
+<title>Workspace</title>
 <style>
-body{background:#0f172a;color:white;font-family:sans-serif}
-.upload{border:2px dashed #334155;padding:30px;text-align:center;cursor:pointer}
-.files{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:20px}
-.file{background:#020617;padding:10px}
+  body{background:#0f172a;color:white;font-family:sans-serif;padding:20px;}
+  .upload{border:2px dashed #334155;padding:30px;text-align:center;cursor:pointer;border-radius:8px;}
+  .upload:hover{background:#1e293b;}
+  .files{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:20px}
+  .file{background:#020617;padding:15px;border-radius:6px;cursor:pointer;text-align:center;border:1px solid #334155;}
+  .file:hover{background:#0f172a;}
 </style>
 </head>
 <body>
 
-<h1>Workspace</h1>
+  <h1>Workspace: <span id="ws-name"></span></h1>
 
-<div class="upload" onclick="pick()">Upload File
-<input type="file" id="f" hidden>
-</div>
+  <div class="upload" onclick="pick()">Upload File
+    <input type="file" id="f" hidden>
+  </div>
 
-<div id="files" class="files"></div>
+  <div id="files" class="files"></div>
 
-<script src="js/api.js"></script>
+  <script src="js/api.js"></script>
 
-<script>
-const f = document.getElementById("f")
+  <script>
+    document.getElementById("ws-name").innerText = localStorage.workspace || "Default";
+    const f = document.getElementById("f");
 
-function pick(){ f.click() }
+    function pick(){ f.click() }
 
-f.addEventListener("change", upload)
+    f.addEventListener("change", upload);
 
-function upload(){
-  const file = f.files[0]
-  const reader = new FileReader()
+    function upload(){
+      const file = f.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
 
-  reader.onload = async () => {
-    const base64 = reader.result.split(",")[1]
+      reader.onload = async () => {
+        const base64 = reader.result.split(",")[1];
 
-    await fetch(API,{
-      method:"POST",
-      body: JSON.stringify({
-        action:"uploadFile",
-        workspace: localStorage.workspace,
-        file: base64,
-        name: file.name,
-        type: file.type
-      })
-    })
+        // Gunakan fungsi api()
+        await api({
+          action: "uploadFile",
+          workspace: localStorage.workspace,
+          file: base64,
+          name: file.name,
+          type: file.type
+        });
 
-    load()
-  }
+        load(); // Muat ulang daftar setelah upload
+      };
 
-  reader.readAsDataURL(file)
-}
+      reader.readAsDataURL(file);
+    }
 
-async function load(){
-  const res = await fetch(API,{
-    method:"POST",
-    body: JSON.stringify({
-      action:"listFiles",
-      workspace: localStorage.workspace
-    })
-  })
+    async function load(){
+      // Gunakan fungsi api()
+      const data = await api({
+        action: "listFiles",
+        workspace: localStorage.workspace
+      });
 
-  const data = await res.json()
+      let html = "";
+      if (data && data.data) {
+        data.data.forEach(file => {
+          html += `<div class="file" onclick="window.open('${file.url}')">${file.name}</div>`;
+        });
+      } else {
+        html = "<p>Belum ada file atau gagal memuat data.</p>";
+      }
 
-  let html = ""
-  data.data.forEach(f=>{
-    html += `<div class="file" onclick="window.open('${f.url}')">${f.name}</div>`
-  })
+      document.getElementById("files").innerHTML = html;
+    }
 
-  document.getElementById("files").innerHTML = html
-}
-
-load()
-</script>
+    load();
+  </script>
 
 </body>
 </html>
