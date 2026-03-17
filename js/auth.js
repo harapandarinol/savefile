@@ -13,9 +13,10 @@ async function login(){
 
   const data = await res.json();
 
-  if(data.status === "ok"){
-    window.location = "dashboard.html";
-  }else{
-    alert("Login gagal");
-  }
+  if(data.status === "success"){
+  localStorage.token = data.token
+  window.location = "dashboard.html";
+}else{
+  alert("Login gagal");
+}
 }
