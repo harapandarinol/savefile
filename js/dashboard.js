@@ -4,7 +4,8 @@ async function loadWorkspace() {
 
   const res = await api({
     action: "listWorkspace",
-    token: localStorage.token
+    token: localStorage.token,
+    email: localStorage.email
   });
 
   el.innerHTML = ""; 
