@@ -7,7 +7,7 @@ async function api(data) {
     }
     isLoading = true;
     try {
-        const res = await fetch(API, { method: "POST", body: JSON.stringify(data), timeout: 10000 });
+        const res = await fetch(API, { method: "POST", body: JSON.stringify(data) });
         if (!res.ok) {
             throw new Error(`HTTP ${res.status}`);
         }
