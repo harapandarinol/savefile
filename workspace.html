@@ -2,21 +2,14 @@
 <html>
 <head>
 <style>
-body{display:flex;background:#0f172a;color:white;margin:0;font-family:sans-serif}
-.sidebar{width:200px;background:#020617;padding:20px}
-.main{flex:1;padding:20px}
+body{background:#0f172a;color:white;font-family:sans-serif}
 .upload{border:2px dashed #334155;padding:30px;text-align:center;cursor:pointer}
 .files{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:20px}
-.file{background:#020617;padding:10px;border-radius:10px}
+.file{background:#020617;padding:10px}
 </style>
 </head>
 <body>
 
-<div class="sidebar">
-<h2>🚀 Simplikit</h2>
-</div>
-
-<div class="main">
 <h1>Workspace</h1>
 
 <div class="upload" onclick="pick()">Upload File
@@ -24,23 +17,22 @@ body{display:flex;background:#0f172a;color:white;margin:0;font-family:sans-serif
 </div>
 
 <div id="files" class="files"></div>
-</div>
 
 <script src="js/api.js"></script>
 
 <script>
-const f = document.getElementById("f");
+const f = document.getElementById("f")
 
-function pick(){ f.click(); }
+function pick(){ f.click() }
 
-f.addEventListener("change", upload);
+f.addEventListener("change", upload)
 
 function upload(){
-  const file = f.files[0];
-  const reader = new FileReader();
+  const file = f.files[0]
+  const reader = new FileReader()
 
   reader.onload = async () => {
-    const base64 = reader.result.split(",")[1];
+    const base64 = reader.result.split(",")[1]
 
     await fetch(API,{
       method:"POST",
@@ -50,31 +42,31 @@ function upload(){
         name: file.name,
         type: file.type
       })
-    });
+    })
 
-    load();
-  };
+    load()
+  }
 
-  reader.readAsDataURL(file);
+  reader.readAsDataURL(file)
 }
 
 async function load(){
   const res = await fetch(API,{
     method:"POST",
-    body: JSON.stringify({action:"getFiles"})
-  });
+    body: JSON.stringify({action:"listFiles"})
+  })
 
-  const data = await res.json();
+  const data = await res.json()
 
-  let html="";
-  data.forEach(f=>{
-    html += `<div class="file" onclick="window.open('${f.url}')">${f.name}</div>`;
-  });
+  let html = ""
+  data.data.forEach(f=>{
+    html += `<div class="file" onclick="window.open('${f.url}')">${f.name}</div>`
+  })
 
-  document.getElementById("files").innerHTML = html;
+  document.getElementById("files").innerHTML = html
 }
 
-load();
+load()
 </script>
 
 </body>
