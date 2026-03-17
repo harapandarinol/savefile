@@ -1,28 +1,14 @@
-
 <!DOCTYPE html>
 <html>
-<head>
-<meta charset="UTF-8">
-<script src="https://cdn.tailwindcss.com"></script>
-</head>
+<body>
+<h2>Login</h2>
 
-<body class="flex items-center justify-center h-screen bg-gray-100">
+<input id="email" placeholder="Email"><br><br>
+<input id="password" type="password" placeholder="Password"><br><br>
 
-<div class="bg-white p-10 rounded-xl w-96">
-
-<h1 class="text-xl font-bold mb-6">Simplikit</h1>
-
-<input id="email" placeholder="email" class="border p-2 w-full mb-2">
-<input id="password" type="password" placeholder="password" class="border p-2 w-full mb-4">
-
-<button onclick="login()" class="bg-indigo-600 text-white p-2 w-full rounded">
-Login
-</button>
-
-</div>
+<button onclick="login()">Login</button>
 
 <script src="js/api.js"></script>
 <script src="js/auth.js"></script>
-
 </body>
 </html>
