@@ -84,10 +84,21 @@
   }
 </script>
 
-  <div id="toast" class="fixed bottom-20 md:bottom-10 left-1/2 transform -translate-x-1/2 bg-slate-800 text-white px-4 py-3 rounded-xl shadow-2xl transition-all duration-300 opacity-0 pointer-events-none translate-y-4 z-50 flex items-center gap-3">
-    <i class='bx bx-check-circle text-green-400 text-xl'></i>
-    <span id="toast-msg" class="text-sm font-medium">Notifikasi</span>
+  <div id="modal-create-ws" class="fixed inset-0 bg-slate-900/50 hidden items-center justify-center z-50 backdrop-blur-sm transition-all opacity-0">
+    <div class="bg-white p-6 rounded-2xl w-[90%] max-w-sm shadow-xl transform transition-all scale-95">
+      <div class="flex items-center gap-3 mb-4 text-indigo-600">
+        <i class='bx bxs-folder-plus text-3xl'></i>
+        <h3 class="text-xl font-bold text-slate-800">Buat Workspace</h3>
+      </div>
+      <p class="text-sm text-slate-500 mb-4">Masukkan nama folder atau ruang kerja baru kamu.</p>
+      <input type="text" id="ws-input-name" class="w-full border border-slate-200 p-3 rounded-xl mb-6 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-transparent transition-all" placeholder="Misal: Project Alpha">
+      <div class="flex justify-end gap-2">
+        <button onclick="closeModalWs()" class="px-5 py-2.5 text-slate-600 font-medium hover:bg-slate-100 rounded-xl transition-colors">Batal</button>
+        <button onclick="submitWorkspace()" class="px-5 py-2.5 bg-indigo-600 font-medium text-white rounded-xl hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200">Simpan</button>
+      </div>
+    </div>
   </div>
+  
   
 </body>
 </html>
