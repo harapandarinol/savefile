@@ -14,6 +14,7 @@ async function login() {
 
   if (data && data.status === "success") {
     localStorage.token = data.token;
+    localStorage.email = data.email;
     window.location = "dashboard.html";
   } else {
     // Tampilkan error di UI
