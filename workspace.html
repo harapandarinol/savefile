@@ -1,48 +1,69 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
-<meta charset="UTF-8">
-<title>Workspace</title>
-<style>
-  body{background:#0f172a;color:white;font-family:sans-serif;padding:20px;}
-  .upload{border:2px dashed #334155;padding:30px;text-align:center;cursor:pointer;border-radius:8px;}
-  .upload:hover{background:#1e293b;}
-  .files{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:20px}
-  .file{background:#020617;padding:15px;border-radius:6px;cursor:pointer;text-align:center;border:1px solid #334155;}
-  .file:hover{background:#0f172a;}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Isi Workspace - Simplikit</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
 </head>
-<body>
+<body class="bg-slate-50 text-slate-800 flex h-screen overflow-hidden">
 
-  <h1>Workspace: <span id="ws-name"></span></h1>
+  <main class="flex-1 flex flex-col h-full overflow-hidden">
+    
+    <header class="bg-white p-4 flex justify-between items-center border-b shadow-sm">
+      <div class="flex items-center gap-3">
+        <a href="dashboard.html" class="p-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors text-slate-600">
+          <i class='bx bx-arrow-back text-xl'></i>
+        </a>
+        <div>
+          <h1 class="text-lg md:text-xl font-bold text-slate-800" id="ws-name">Memuat...</h1>
+          <p class="text-xs text-slate-500">File Manager</p>
+        </div>
+      </div>
+      <button onclick="document.getElementById('f').click()" class="hidden md:flex bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl items-center gap-2 shadow-sm transition-all">
+        <i class='bx bx-cloud-upload text-xl'></i> Upload File
+      </button>
+    </header>
 
-  <div class="upload" onclick="pick()">Upload File
-    <input type="file" id="f" hidden>
-  </div>
+    <div class="flex-1 overflow-y-auto p-4 md:p-8 pb-24">
+      
+      <div class="md:hidden mb-6 border-2 border-dashed border-indigo-200 bg-indigo-50/50 hover:bg-indigo-50 rounded-2xl p-6 text-center cursor-pointer transition-colors" onclick="document.getElementById('f').click()">
+        <i class='bx bx-cloud-upload text-4xl text-indigo-500 mb-2'></i>
+        <p class="text-sm font-medium text-indigo-700">Ketuk untuk upload file</p>
+        <p class="text-xs text-slate-500 mt-1">Maksimal bergantung pada Google Drive</p>
+      </div>
 
-  <div id="files" class="files"></div>
+      <input type="file" id="f" hidden>
+
+      <div id="files" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+        </div>
+    </div>
+
+  </main>
 
   <script src="js/api.js"></script>
-
   <script>
-    document.getElementById("ws-name").innerText = localStorage.workspace || "Default";
+    if(!localStorage.workspace) window.location = "dashboard.html";
+    
+    document.getElementById("ws-name").innerText = localStorage.workspaceName || "Workspace";
     const f = document.getElementById("f");
-
-    function pick(){ f.click() }
+    const filesContainer = document.getElementById("files");
 
     f.addEventListener("change", upload);
 
-    function upload(){
+    async function upload(){
       const file = f.files[0];
       if (!file) return;
       
-      const reader = new FileReader();
+      // Loading State (Bisa diperbagus dengan progress bar nanti)
+      filesContainer.innerHTML = `<div class="col-span-full text-center py-10"><i class='bx bx-loader-alt bx-spin text-3xl text-indigo-600'></i><p class="mt-2 text-slate-500">Mengupload ${file.name}...</p></div>` + filesContainer.innerHTML;
 
+      const reader = new FileReader();
       reader.onload = async () => {
         const base64 = reader.result.split(",")[1];
 
-        // Gunakan fungsi api()
-        await api({
+        const res = await api({
           action: "uploadFile",
           workspace: localStorage.workspace,
           file: base64,
@@ -50,33 +71,53 @@
           type: file.type
         });
 
-        load(); // Muat ulang daftar setelah upload
+        if(res && res.status !== "success") {
+          alert("Gagal upload: " + res.message);
+        }
+        
+        load(); // Muat ulang setelah upload
       };
-
       reader.readAsDataURL(file);
     }
 
     async function load(){
-      // Gunakan fungsi api()
+      filesContainer.innerHTML = `<div class="col-span-full text-center py-10 text-slate-500"><i class='bx bx-loader-alt bx-spin text-3xl'></i></div>`;
+
       const data = await api({
         action: "listFiles",
         workspace: localStorage.workspace
       });
 
-      let html = "";
-      if (data && data.data) {
-        data.data.forEach(file => {
-          html += `<div class="file" onclick="window.open('${file.url}')">${file.name}</div>`;
-        });
-      } else {
-        html = "<p>Belum ada file atau gagal memuat data.</p>";
-      }
+      if (data && data.status === "success") {
+        if(data.data.length === 0) {
+          filesContainer.innerHTML = `<div class="col-span-full text-center py-12"><i class='bx bx-file-blank text-5xl text-slate-300 mb-3'></i><p class="text-slate-500">Workspace ini masih kosong.</p></div>`;
+          return;
+        }
 
-      document.getElementById("files").innerHTML = html;
+        let html = "";
+        data.data.forEach(file => {
+          // Menentukan ikon berdasarkan ekstensi (contoh sederhana)
+          let icon = "bx-file";
+          if(file.name.match(/\.(jpg|jpeg|png|gif)$/i)) icon = "bx-image";
+          else if(file.name.match(/\.(pdf)$/i)) icon = "bxs-file-pdf text-red-500";
+          else if(file.name.match(/\.(zip|rar)$/i)) icon = "bxs-file-archive text-yellow-500";
+
+          html += `
+          <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center text-center group" onclick="window.open('${file.url}')">
+            <div class="h-16 w-16 bg-slate-50 rounded-lg flex items-center justify-center mb-3 group-hover:bg-indigo-50 transition-colors">
+              <i class='bx ${icon} text-4xl text-slate-400 group-hover:text-indigo-500'></i>
+            </div>
+            <span class="text-sm font-medium text-slate-700 w-full truncate px-1">${file.name}</span>
+            <span class="text-[10px] text-slate-400 mt-1 w-full truncate hidden md:block">${new Date(file.date).toLocaleDateString('id-ID')}</span>
+          </div>`;
+        });
+        filesContainer.innerHTML = html;
+      } else {
+        filesContainer.innerHTML = "<p class='col-span-full text-center text-red-500'>Gagal memuat file.</p>";
+      }
     }
 
     load();
   </script>
-
 </body>
 </html>
