@@ -20,15 +20,15 @@ async function loadWorkspace() {
     }
 
     res.data.forEach(ws => {
-      // Desain Card Modern menggunakan Tailwind
+      // Tombol Info diubah menjadi Tombol Copy
       el.innerHTML += `
       <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow group cursor-pointer" onclick="openWorkspace('${ws.id}', '${ws.name}')">
         <div class="flex justify-between items-start mb-4">
           <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl group-hover:bg-indigo-600 group-hover:text-white transition-colors">
             <i class='bx bx-folder text-2xl'></i>
           </div>
-          <button class="text-slate-400 hover:text-slate-600" onclick="event.stopPropagation(); alert('ID: ${ws.id}')">
-            <i class='bx bx-info-circle text-xl'></i>
+          <button class="text-slate-400 hover:text-indigo-600 transition-colors p-1" onclick="event.stopPropagation(); copyId('${ws.id}')" title="Salin ID">
+            <i class='bx bx-copy text-xl'></i>
           </button>
         </div>
         <h3 class="text-lg font-bold text-slate-800 truncate">${ws.name}</h3>
@@ -59,10 +59,57 @@ async function createWorkspace() {
   });
 
   if(res && res.status === "success") {
+    showToast("Workspace berhasil dibuat!");
     loadWorkspace();
   } else {
-    alert(res ? res.message : "Gagal membuat workspace");
+    showToast(res ? res.message : "Gagal membuat workspace", true);
   }
+}
+
+// === FITUR BARU: COPY ID ===
+function copyId(id) {
+  navigator.clipboard.writeText(id).then(() => {
+    showToast("ID Workspace disalin ke clipboard!");
+  }).catch(err => {
+    showToast("Gagal menyalin ID", true);
+    console.error('Error copy:', err);
+  });
+}
+
+// === FITUR BARU: TOAST NOTIFICATION ===
+let toastTimeout; // Variabel untuk mereset timer jika tombol diklik berkali-kali
+function showToast(message, isError = false) {
+  const toast = document.getElementById("toast");
+  const toastMsg = document.getElementById("toast-msg");
+  const icon = toast.querySelector("i");
+
+  if (!toast) {
+    alert(message); // Fallback jika HTML toast belum ditambahkan
+    return;
+  }
+
+  // Set Pesan
+  toastMsg.innerText = message;
+
+  // Ganti warna & ikon jika error
+  if (isError) {
+    icon.className = "bx bx-x-circle text-red-400 text-xl";
+  } else {
+    icon.className = "bx bx-check-circle text-green-400 text-xl";
+  }
+
+  // Munculkan Toast (Hapus class transparan dan geser bawah)
+  toast.classList.remove("opacity-0", "translate-y-4", "pointer-events-none");
+  toast.classList.add("opacity-100", "translate-y-0");
+
+  // Reset timer sebelumnya agar tidak bentrok
+  clearTimeout(toastTimeout);
+
+  // Sembunyikan otomatis setelah 3 detik
+  toastTimeout = setTimeout(() => {
+    toast.classList.remove("opacity-100", "translate-y-0");
+    toast.classList.add("opacity-0", "translate-y-4", "pointer-events-none");
+  }, 3000);
 }
 
 // Cek login saat halaman dimuat
