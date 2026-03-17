@@ -21,16 +21,22 @@ async function loadWorkspace() {
     }
 
     res.data.forEach(ws => {
-      // Tombol Info diubah menjadi Tombol Copy
       el.innerHTML += `
       <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow group cursor-pointer" onclick="openWorkspace('${ws.id}', '${ws.name}')">
         <div class="flex justify-between items-start mb-4">
           <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl group-hover:bg-indigo-600 group-hover:text-white transition-colors">
             <i class='bx bx-folder text-2xl'></i>
           </div>
-          <button class="text-slate-400 hover:text-indigo-600 transition-colors p-1" onclick="event.stopPropagation(); copyId('${ws.id}')" title="Salin ID">
-            <i class='bx bx-copy text-xl'></i>
-          </button>
+          
+          <div class="flex gap-1">
+            <button class="text-slate-400 hover:text-indigo-600 transition-colors p-1.5 rounded-lg hover:bg-indigo-50" onclick="event.stopPropagation(); copyId('${ws.id}')" title="Salin ID">
+              <i class='bx bx-copy text-xl'></i>
+            </button>
+            <button class="text-slate-400 hover:text-red-500 transition-colors p-1.5 rounded-lg hover:bg-red-50" onclick="event.stopPropagation(); deleteWs('${ws.id}', '${ws.name}')" title="Hapus Workspace">
+              <i class='bx bx-trash text-xl'></i>
+            </button>
+          </div>
+
         </div>
         <h3 class="text-lg font-bold text-slate-800 truncate">${ws.name}</h3>
         <p class="text-xs text-slate-400 mt-1 truncate">ID: ${ws.id}</p>
@@ -116,3 +122,27 @@ function showToast(message, isError = false) {
 // Cek login saat halaman dimuat
 if(!localStorage.token) window.location = "index.html";
 loadWorkspace();
+
+// === FITUR BARU: HAPUS WORKSPACE ===
+async function deleteWs(id, name) {
+  // Munculkan popup konfirmasi bawaan browser agar user tidak tidak sengaja menghapus
+  const confirmDelete = confirm(`⚠️ PERINGATAN!\n\nApakah kamu yakin ingin menghapus workspace "${name}"?\nSemua data di dalamnya akan hilang dari database.`);
+  
+  if (!confirmDelete) return; // Batal jika user pilih "Cancel"
+
+  showToast("Menghapus workspace...");
+
+  const res = await api({
+    action: "deleteWorkspace",
+    token: localStorage.token,
+    email: localStorage.email, // Kirim email untuk dicek sebagai Owner
+    id: id
+  });
+
+  if (res && res.status === "success") {
+    showToast("Workspace berhasil dihapus!");
+    loadWorkspace(); // Muat ulang layar agar card-nya hilang
+  } else {
+    showToast(res ? res.message : "Gagal menghapus workspace", true);
+  }
+}
