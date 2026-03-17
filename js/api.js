@@ -1,4 +1,4 @@
-const API = "https://script.google.com/macros/s/AKfycbxdRznNS6s4VneF2kPLl7J7fBRAcHzAj66D5bRIA4TdONgA4_gek8SU-aGzLn9CMYM3/exec";
+const API = "https://script.google.com/macros/s/AKfycbxJukz7Op1fJ01P170-rou-t3nDoKKtPW_KiRDXohZlvi4B6zudE1Xhrvv6EXTG11TQ/exec";
 let isLoading = false;
 async function api(data) {
     if (isLoading) {
