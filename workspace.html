@@ -83,32 +83,32 @@
       reader.readAsDataURL(file);
     }
 
-    async function load(){
-      filesContainer.innerHTML = `<div class="col-span-full text-center py-10 text-slate-500"><i class='bx bx-loader-alt bx-spin text-3xl'></i></div>`;
-
-      const data = await api({
+    async function load() {
+      filesContainer.innerHTML = "<p class='col-span-full text-center text-slate-500 py-10'><i class='bx bx-loader-alt bx-spin text-3xl'></i><br>Memuat file...</p>";
+      
+      const res = await api({
         action: "listFiles",
-        workspace: localStorage.workspace
+        workspace: wsId
       });
 
-      if (data && data.status === "success") {
-        if(data.data.length === 0) {
-          filesContainer.innerHTML = `<div class="col-span-full text-center py-12"><i class='bx bx-file-blank text-5xl text-slate-300 mb-3'></i><p class="text-slate-500">Workspace ini masih kosong.</p></div>`;
+      if(res && res.status === "success") {
+        if(res.data.length === 0) {
+          filesContainer.innerHTML = "<p class='col-span-full text-center text-slate-500 py-10'>Belum ada file.</p>";
           return;
         }
 
         let html = "";
-        data.data.forEach(file => {
-          // Menentukan ikon berdasarkan ekstensi (contoh sederhana)
-          let icon = "bx-file";
-          if(file.name.match(/\.(jpg|jpeg|png|gif)$/i)) icon = "bx-image";
+        res.data.forEach(file => {
+          let icon = "bxs-file text-slate-400";
+          if(file.name.match(/\.(jpg|jpeg|png|gif)$/i)) icon = "bx-image text-blue-500";
           else if(file.name.match(/\.(pdf)$/i)) icon = "bxs-file-pdf text-red-500";
           else if(file.name.match(/\.(zip|rar)$/i)) icon = "bxs-file-archive text-yellow-500";
 
+          // UBAH ONCLICK: Dari window.open() menjadi openPreview()
           html += `
-          <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center text-center group" onclick="window.open('${file.url}')">
+          <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow cursor-pointer flex flex-col items-center text-center group" onclick="openPreview('${file.url}', '${file.name}')">
             <div class="h-16 w-16 bg-slate-50 rounded-lg flex items-center justify-center mb-3 group-hover:bg-indigo-50 transition-colors">
-              <i class='bx ${icon} text-4xl text-slate-400 group-hover:text-indigo-500'></i>
+              <i class='bx ${icon} text-4xl group-hover:text-indigo-500'></i>
             </div>
             <span class="text-sm font-medium text-slate-700 w-full truncate px-1">${file.name}</span>
             <span class="text-[10px] text-slate-400 mt-1 w-full truncate hidden md:block">${new Date(file.date).toLocaleDateString('id-ID')}</span>
@@ -118,6 +118,32 @@
       } else {
         filesContainer.innerHTML = "<p class='col-span-full text-center text-red-500'>Gagal memuat file.</p>";
       }
+    }
+
+    // --- FUNGSI PREVIEW ---
+    function openPreview(url, fileName) {
+      const modal = document.getElementById("preview-modal");
+      const iframe = document.getElementById("preview-iframe");
+      
+      // Google Drive default URL is .../view?usp=drivesdk
+      // Untuk Iframe/Preview, kita replace "/view" menjadi "/preview"
+      const previewUrl = url.replace(/\/view.*$/, '/preview');
+      
+      document.getElementById("preview-title").innerText = fileName;
+      document.getElementById("preview-download").href = url; // Link asli untuk download
+      iframe.src = previewUrl;
+      
+      modal.classList.remove("hidden");
+      setTimeout(() => modal.classList.remove("opacity-0"), 10);
+    }
+
+    function closePreview() {
+      const modal = document.getElementById("preview-modal");
+      modal.classList.add("opacity-0");
+      setTimeout(() => {
+        modal.classList.add("hidden");
+        document.getElementById("preview-iframe").src = ""; // Clear iframe agar audio/video berhenti
+      }, 300);
     }
 
     load();
@@ -131,5 +157,24 @@
     });
   }
 </script>
+
+  <div id="preview-modal" class="fixed inset-0 bg-black/80 hidden z-50 flex-col items-center justify-center backdrop-blur-md opacity-0 transition-opacity duration-300">
+    <div class="absolute top-0 left-0 w-full p-4 flex justify-between items-center bg-gradient-to-b from-black/60 to-transparent">
+      <h3 id="preview-title" class="text-white font-medium truncate max-w-[80%]">Preview Document</h3>
+      <div class="flex gap-2">
+        <a id="preview-download" href="#" target="_blank" class="p-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-colors" title="Buka di Tab Baru / Download">
+          <i class='bx bx-link-external text-xl'></i>
+        </a>
+        <button onclick="closePreview()" class="p-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors" title="Tutup">
+          <i class='bx bx-x text-xl'></i>
+        </button>
+      </div>
+    </div>
+    
+    <div class="w-full h-full pt-16 pb-4 px-4 flex items-center justify-center">
+      <iframe id="preview-iframe" class="w-full max-w-5xl h-full bg-white rounded-xl shadow-2xl" src="" frameborder="0" allowfullscreen></iframe>
+    </div>
+  </div>
+  
 </body>
 </html>
