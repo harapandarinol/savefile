@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
+  <meta charset="UTF-8">
+  <title>Dashboard - Simplikit</title>
+  <link rel="stylesheet" href="css/style.css">
 </head>
-
 <body>
 
-<h1>Dashboard</h1>
+  <div class="container">
+    <h1>Dashboard</h1>
+    <button onclick="createWorkspace()">Buat Workspace Baru</button>
+    
+    <div id="workspaces" style="margin-top: 20px;"></div>
+  </div>
 
-<button onclick="go()">Masuk Workspace</button>
-
-<script>
-function go(){
-  localStorage.workspace = "default" // sementara
-  window.location = "workspace.html";
-}
-</script>
+  <script src="js/api.js"></script>
+  <script src="js/dashboard.js"></script>
 
 </body>
 </html>
