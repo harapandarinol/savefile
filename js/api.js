@@ -1,5 +1,5 @@
 
-const API="https://script.google.com/macros/s/AKfycbzrWghxMedUPauaA9LPqhOOHy3yn1oZlauDRhDt6cm5Vdd_iu2MChHzS_ZHXmoPXGgr/exec"
+const API="https://script.google.com/macros/s/AKfycbzsCc-PaMe0ySylcJS8iCwJCqGvQawxA36cLBgPSFEenI62jaUaSTcn4evR8klzK_KE/exec"
 
 async function api(data){
 
