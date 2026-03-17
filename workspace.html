@@ -38,6 +38,7 @@ function upload(){
       method:"POST",
       body: JSON.stringify({
         action:"uploadFile",
+        workspace: localStorage.workspace,
         file: base64,
         name: file.name,
         type: file.type
@@ -53,7 +54,10 @@ function upload(){
 async function load(){
   const res = await fetch(API,{
     method:"POST",
-    body: JSON.stringify({action:"listFiles"})
+    body: JSON.stringify({
+      action:"listFiles",
+      workspace: localStorage.workspace
+    })
   })
 
   const data = await res.json()
