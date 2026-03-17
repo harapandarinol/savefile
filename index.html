@@ -31,6 +31,15 @@ Login
 
 <script src="js/api.js"></script>
 <script src="js/auth.js"></script>
+  <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('Service Worker terdaftar!', reg.scope))
+        .catch(err => console.log('Gagal mendaftar Service Worker', err));
+    });
+  }
+</script>
 
 </body>
 </html>
