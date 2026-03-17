@@ -78,27 +78,74 @@ function closeModalWs() {
 }
 
 // Eksekusi API saat tombol "Simpan" diklik
-async function submitWorkspace() {
+async function submitWorkspace(event) {
+  // 1. Mencegah halaman reload jika berada di dalam <form>
+  if (event) event.preventDefault(); 
+
   const nameInput = document.getElementById("ws-input-name").value.trim();
-  if (!nameInput) return; // Jika kosong, batalkan
+  if (!nameInput) {
+    showToast("Nama workspace tidak boleh kosong", true);
+    return; 
+  }
   
   closeModalWs();
   showToast("Membuat workspace...");
 
-  const res = await api({
-    action: "createWorkspace",
-    token: localStorage.token,
-    email: localStorage.email,
-    name: nameInput
-  });
+  try {
+    const res = await api({
+      action: "createWorkspace",
+      token: localStorage.token,
+      email: localStorage.email,
+      name: nameInput
+    });
 
-  if (res && res.status === "success") {
-    showToast("Workspace berhasil dibuat!");
-    loadWorkspace(); // Refresh daftar workspace
-  } else {
-    showToast("Gagal membuat workspace.");
+    if (res && res.status === "success") {
+      showToast("Workspace berhasil dibuat!");
+      loadWorkspace(); // Refresh daftar workspace
+    } else {
+      // 2. Tampilkan pesan error ASLI dari backend agar penyebabnya ketahuan
+      showToast(res ? res.message : "Gagal membuat workspace", true);
+      console.error("Detail Error API:", res);
+    }
+  } catch (error) {
+    showToast("Terjadi kesalahan jaringan", true);
+    console.error("Error eksekusi:", error);
   }
 }
+
+let toastTimeout;
+function showToast(message, isError = false) {
+  const toast = document.getElementById("toast");
+  if (!toast) {
+    alert(message); // Fallback jika div #toast tidak ada di HTML
+    return;
+  }
+
+  const toastMsg = document.getElementById("toast-msg");
+  const icon = toast.querySelector("i");
+
+  if (toastMsg) toastMsg.innerText = message;
+
+  // 3. Pastikan ikon ada sebelum mengubah class-nya (Mencegah Crash)
+  if (icon) {
+    if (isError) {
+      icon.className = "bx bx-x-circle text-red-400 text-xl";
+    } else {
+      icon.className = "bx bx-check-circle text-green-400 text-xl";
+    }
+  }
+
+  toast.classList.remove("opacity-0", "translate-y-4", "pointer-events-none");
+  toast.classList.add("opacity-100", "translate-y-0");
+
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => {
+    toast.classList.remove("opacity-100", "translate-y-0");
+    toast.classList.add("opacity-0", "translate-y-4", "pointer-events-none");
+  }, 3000);
+}
+
+
 // === FITUR BARU: COPY ID ===
 function copyId(id) {
   navigator.clipboard.writeText(id).then(() => {
@@ -109,41 +156,7 @@ function copyId(id) {
   });
 }
 
-// === FITUR BARU: TOAST NOTIFICATION ===
-let toastTimeout; // Variabel untuk mereset timer jika tombol diklik berkali-kali
-function showToast(message, isError = false) {
-  const toast = document.getElementById("toast");
-  const toastMsg = document.getElementById("toast-msg");
-  const icon = toast.querySelector("i");
 
-  if (!toast) {
-    alert(message); // Fallback jika HTML toast belum ditambahkan
-    return;
-  }
-
-  // Set Pesan
-  toastMsg.innerText = message;
-
-  // Ganti warna & ikon jika error
-  if (isError) {
-    icon.className = "bx bx-x-circle text-red-400 text-xl";
-  } else {
-    icon.className = "bx bx-check-circle text-green-400 text-xl";
-  }
-
-  // Munculkan Toast (Hapus class transparan dan geser bawah)
-  toast.classList.remove("opacity-0", "translate-y-4", "pointer-events-none");
-  toast.classList.add("opacity-100", "translate-y-0");
-
-  // Reset timer sebelumnya agar tidak bentrok
-  clearTimeout(toastTimeout);
-
-  // Sembunyikan otomatis setelah 3 detik
-  toastTimeout = setTimeout(() => {
-    toast.classList.remove("opacity-100", "translate-y-0");
-    toast.classList.add("opacity-0", "translate-y-4", "pointer-events-none");
-  }, 3000);
-}
 
 // Cek login saat halaman dimuat
 if(!localStorage.token) window.location = "index.html";
